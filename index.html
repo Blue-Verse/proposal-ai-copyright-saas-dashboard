@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발 — 프로젝트 제안서" />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+  <link href="https://cdn.jsdelivr.net/gh/sun-typeface/SUIT@2/fonts/variable/woff2/SUIT-Variable.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['SUIT Variable', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'monospace']
+          },
+          colors: {
+            brand: {
+              50: '#f0f9ff',
+              100: '#e0f2fe',
+              200: '#bae6fd',
+              600: '#0284c7',
+              700: '#0369a1'
+            }
+          },
+          boxShadow: {
+            soft: '0 10px 30px -18px rgba(15, 23, 42, 0.35)'
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    :root { color-scheme: light; font-size: 16px; }
+    body {
+      font-family: 'SUIT Variable', sans-serif;
+      font-size: 1rem;
+      background-image:
+        radial-gradient(circle at 12% 18%, rgba(14, 165, 233, 0.08), transparent 42%),
+        radial-gradient(circle at 88% 82%, rgba(2, 132, 199, 0.06), transparent 48%);
+    }
+
+    .doc-content h1, .doc-content h2, .doc-content h3, .doc-content h4 {
+      color: rgb(15 23 42); font-weight: 700; letter-spacing: -0.01em;
+      line-height: 1.3; margin-top: 1.6em; margin-bottom: 0.7em;
+    }
+    .doc-content h1 { font-size: 2rem; margin-top: 0.2em; }
+    .doc-content h2 { font-size: 1.4rem; }
+    .doc-content h3 { font-size: 1.15rem; }
+    .doc-content p, .doc-content li {
+      color: rgb(51 65 85); line-height: 1.8; font-size: 1rem;
+    }
+    .doc-content p, .doc-content ul, .doc-content ol,
+    .doc-content table, .doc-content pre, .doc-content blockquote {
+      margin-bottom: 1rem;
+    }
+    .doc-content ul, .doc-content ol { padding-left: 1.2rem; }
+    .doc-content ul { list-style: disc; }
+    .doc-content ol { list-style: decimal; }
+    .doc-content table {
+      width: 100%; border-collapse: collapse;
+      border: 1px solid rgb(226 232 240); border-radius: 0.75rem;
+      overflow: hidden; font-size: 1rem;
+    }
+    .doc-content th, .doc-content td {
+      border: 1px solid rgb(226 232 240); padding: 0.7rem 0.8rem;
+      text-align: left; vertical-align: top;
+    }
+    .doc-content th {
+      background: rgb(248 250 252); color: rgb(30 41 59); font-weight: 600;
+    }
+    .doc-content pre, .doc-content code {
+      font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    }
+    .doc-content pre {
+      background: rgb(15 23 42); color: rgb(226 232 240);
+      padding: 1rem; border-radius: 0.75rem; overflow-x: auto;
+      font-size: 1rem; line-height: 1.65;
+    }
+    .doc-content p code, .doc-content li code,
+    .doc-content td code, .doc-content th code {
+      background: rgb(241 245 249); color: rgb(15 23 42);
+      border: 1px solid rgb(226 232 240); border-radius: 0.4rem;
+      padding: 0.08rem 0.4rem; font-size: 1em;
+    }
+    .doc-content blockquote {
+      border-left: 3px solid rgb(14 165 233); padding-left: 0.85rem;
+      color: rgb(71 85 105); background: rgb(240 249 255);
+      border-radius: 0.5rem; padding-top: 0.55rem; padding-bottom: 0.55rem;
+    }
+
+    .text-xs { font-size: 1rem !important; }
+
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0.6rem; top: 0.25rem; bottom: 0.25rem;
+      width: 2px; background: rgb(186 230 253);
+    }
+    .timeline-item { position: relative; margin-bottom: 1.75rem; }
+    .timeline-item::before {
+      content: ''; position: absolute; left: -1.65rem; top: 0.35rem;
+      width: 0.75rem; height: 0.75rem; border-radius: 50%;
+      background: rgb(2 132 199); border: 3px solid rgb(224 242 254);
+    }
+
+    .page-section { display: none; }
+    .page-section.active { display: block; }
+
+    #sidebar-backdrop { display: none; }
+    #sidebar-backdrop.open { display: block; }
+    @media (max-width: 1023px) {
+      #sidebar { transform: translateX(-100%); transition: transform 0.2s ease; position: fixed; top: 0; left: 0; z-index: 40; height: 100vh; width: 80vw; max-width: 320px; }
+      #sidebar.open { transform: translateX(0); }
+    }
+  </style>
+  <title>AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발 — 프로젝트 제안서</title>
+</head>
+<body class="text-slate-800 font-sans antialiased">
+  <div class="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-10">
+
+    <header class="mb-6 rounded-2xl border border-slate-200/70 bg-white/85 px-5 py-3 shadow-soft backdrop-blur">
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="sidebar-toggle" class="lg:hidden inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-3 py-1 text-sm font-medium text-slate-700 hover:border-sky-300 hover:text-sky-700">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          메뉴
+        </button>
+        <a href="#home" class="inline-flex items-center shrink-0 text-sm font-bold tracking-tight text-slate-800">
+          프로젝트 제안서
+        </a>
+        <div class="hidden sm:block ml-auto text-right">
+          <p class="text-sm font-semibold tracking-[0.04em] text-sky-700/90">AI 기반 저작권 보호 B2B SaaS 대시보드</p>
+          <p class="text-xs text-slate-400">프로젝트 제안서</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="grid gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
+
+      <div id="sidebar-backdrop" class="fixed inset-0 bg-black/30 z-30 lg:hidden" onclick="closeSidebar()"></div>
+      <aside id="sidebar" class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 shadow-soft backdrop-blur lg:sticky lg:top-6 lg:h-[calc(100vh-4rem)] lg:overflow-auto">
+        <nav id="nav" class="space-y-1">
+          <a href="#home" data-page="home" class="nav-link block rounded-xl border px-3 py-2 text-sm border-sky-200 bg-sky-50 font-medium text-sky-700">홈</a>
+          <div class="my-3 border-t border-slate-200"></div>
+          <p class="mb-2 mt-1 px-1 text-sm font-semibold tracking-[0.14em] text-slate-400">제안서</p>
+          <a href="#overview" data-page="overview" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">프로젝트 소개</a>
+          <a href="#estimate" data-page="estimate" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">견적서</a>
+          <a href="#manday" data-page="manday" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">공수계산서</a>
+          <a href="#prd" data-page="prd" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">PRD</a>
+          <div class="my-3 border-t border-slate-200"></div>
+          <p class="mb-2 mt-1 px-1 text-sm font-semibold tracking-[0.14em] text-slate-400">일정 & 경험</p>
+          <a href="#timeline" data-page="timeline" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">일정 제안</a>
+          <a href="#portfolio" data-page="portfolio" class="nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900">유사 프로젝트 경험</a>
+        </nav>
+      </aside>
+
+      <main class="min-w-0">
+
+        <!-- PAGE: Home -->
+        <div id="page-home" class="page-section active space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-6 shadow-soft backdrop-blur md:p-8">
+            <p class="mb-2 text-xs font-semibold tracking-[0.2em] text-sky-700/80">프로젝트 제안서</p>
+            <h1 class="text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발</h1>
+            <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-600 md:text-base">자체 AI 엔진과 연동되는 멀티테넌트 B2B SaaS 운영 대시보드, 인증·권한·감사 로그까지 처리하는 미들웨어, AWS 기반 CI/CD 인프라를 턴키로 구축합니다. MVP가 아닌 상용화·운영 가능한 완성도를 목표로 합니다.</p>
+            <div class="mt-4 flex flex-wrap items-center gap-2">
+              <span class="inline-flex rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-sky-700">18,000,000원</span>
+              <span class="inline-flex rounded-full border border-sky-200 bg-sky-100 px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-sky-700">120일</span>
+              <span class="inline-flex rounded-full border border-amber-200 bg-amber-100 px-2.5 py-1 text-sm font-semibold tracking-[0.12em] text-amber-700">B2B SaaS · 웹</span>
+              <a href="https://www.wishket.com/project/155247/" target="_blank" rel="noopener noreferrer"
+                 class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-white px-2.5 py-1 text-sm font-medium text-slate-500 transition hover:border-sky-300 hover:text-sky-700">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+                원본 공고
+              </a>
+            </div>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <a href="#overview" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">소개</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">프로젝트 소개</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">프로젝트 분석, 핵심 요구사항 정리, 제안 포인트</p>
+            </a>
+            <a href="#estimate" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">비용</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">견적서</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">항목별 비용 산출 근거 및 상세 견적</p>
+            </a>
+            <a href="#manday" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">공수</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">공수계산서</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">기능별 개발 공수(man-day) 산출 내역</p>
+            </a>
+            <a href="#prd" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-amber-100 text-amber-700 border-amber-200">기획</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">PRD</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">기능 요구사항 정의서, 사용자 스토리, 기술 제약</p>
+            </a>
+            <a href="#timeline" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-amber-100 text-amber-700 border-amber-200">일정</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">일정 제안</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">단계별 마일스톤 및 산출물 일정표</p>
+            </a>
+            <a href="#portfolio" class="group rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-amber-100 text-amber-700 border-amber-200">경험</div>
+              <h2 class="text-lg font-semibold tracking-tight text-slate-900 group-hover:text-sky-700">유사 프로젝트 경험</h2>
+              <p class="mt-2 text-sm leading-7 text-slate-600">유사 프로젝트 수행 경험 및 기술 스택</p>
+            </a>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">18,000,000원</p>
+              <p class="mt-1 text-sm text-slate-500">제안 금액 (VAT 별도)</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">120일</p>
+              <p class="mt-1 text-sm text-slate-500">제안 기간 (4개월)</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">13+</p>
+              <p class="mt-1 text-sm text-slate-500">유사 프로젝트 수행</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">B2B SaaS</p>
+              <p class="mt-1 text-sm text-slate-500">핵심 도메인</p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-brand-50 p-6 text-center shadow-soft md:p-10">
+            <h2 class="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">함께 만들어 가겠습니다</h2>
+            <p class="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">각 메뉴를 클릭하시면 상세 내용을 확인하실 수 있습니다.</p>
+          </div>
+        </div>
+
+        <!-- PAGE: Overview -->
+        <div id="page-overview" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>프로젝트 소개</h1>
+              <blockquote>자체 AI 엔진과 연동되는 멀티테넌트 B2B SaaS 운영 대시보드, 인증·권한·감사 로그까지 처리하는 미들웨어, AWS 기반 CI/CD 인프라를 턴키로 구축합니다. MVP가 아닌 상용화·운영 가능한 완성도를 목표로 합니다.</blockquote>
+
+              <h2>프로젝트 개요</h2>
+              <table>
+                <tr><th>항목</th><th>내용</th></tr>
+                <tr><td>프로젝트명</td><td><a href="https://www.wishket.com/project/155247/" target="_blank" rel="noopener noreferrer" class="text-sky-700 underline decoration-sky-300 hover:decoration-sky-500">AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발</a></td></tr>
+                <tr><td>카테고리</td><td>B2B SaaS · 웹 · SaaSㆍ솔루션 · 데이터 분석ㆍBI · Gen AI 서비스</td></tr>
+                <tr><td>제안 금액</td><td>18,000,000원 (VAT 별도)</td></tr>
+                <tr><td>제안 기간</td><td>120일 (4개월)</td></tr>
+                <tr><td>핵심 기술</td><td>Next.js 14 · NestJS 10 · TypeScript · PostgreSQL · AWS · Docker</td></tr>
+              </table>
+
+              <h2>핵심 요구사항 분석</h2>
+              <ul>
+                <li>턴키 구축 범위: 권한별 화면 기획·UI/UX 디자인, 고객 대시보드·관리자 웹 프론트엔드, 인증/권한/회원/AI 엔진 중계 미들웨어, AWS 인프라 및 CI/CD 파이프라인 전체</li>
+                <li>멀티테넌시 구조: 여러 기업이 하나의 플랫폼을 공유하되 데이터 완전 격리, 관리자·운영자·조회자 3단계 권한 분리, 감사 로그 상시 기록</li>
+                <li>콘텐츠 관리: 콘텐츠 업로드·라이브러리, 보호 정책 설정 화면, 각종 정책 설정 페이지</li>
+                <li>탐지 및 대응: 실시간 침해 탐지 피드, 증거 패키지 조회·다운로드, Notice & Takedown 요청 추적(제출 상태와 후속 조치까지)</li>
+                <li>알림 및 리포트: 이메일·SMS·인앱 알림, 차트 기반 분석 화면과 월간 리포트</li>
+                <li>다국어: 한국어·영어 이중언어 지원</li>
+                <li>AI 엔진 연동: 클라이언트 제공 Docker 이미지(저작권 보호 백엔드 엔진)와 안정적 통합, Swagger/OpenAPI 스펙 기반 미들웨어 중계</li>
+                <li>인프라: AWS 기반(EC2/ECS·RDS·S3·CloudFront 등), CI/CD 파이프라인, SSL/TLS, 도메인 설정 포함</li>
+                <li>완성도 기준: MVP가 아닌 실제 상용 판매·운영 가능한 안정성과 완성도</li>
+              </ul>
+
+              <h2>제안 포인트</h2>
+              <ol>
+                <li><strong>유사 B2B SaaS 대시보드 다수 수행</strong> — EZ-Approve(전자결재 SaaS, 50+ 페이지, 7 사용자 역할, 6계층 보안), Series-B(VC 펀드 관리, 22 도메인 모듈, 200~300+ API 엔드포인트), Harmony-Link(시니어 케어 멀티테넌트, AI 분석 연동, 140+ 엔드포인트)를 1인 풀스택으로 끝까지 끌고 가본 경험을 그대로 적용합니다.</li>
+                <li><strong>멀티테넌시 + RBAC + 감사 로그 패턴 검증 완료</strong> — Harmony-Link에서 멀티테넌트 아키텍처, EZ-Approve에서 CASL 기반 RBAC와 감사 로그를 운영 환경에 안정적으로 안착시킨 경험이 있습니다. 동일한 패턴을 본 프로젝트의 관리자·운영자·조회자 권한 분리 및 기업 데이터 격리에 적용합니다.</li>
+                <li><strong>AI 엔진(Docker) 연동 미들웨어 설계 강점</strong> — Harmony-Link의 OpenAI 분석 파이프라인 및 AI Agent 프레임워크에서 외부 LLM/추론 엔진 호출 중계·재시도·실패 큐를 다룬 경험이 있어, 클라이언트 제공 Docker 엔진과의 통합을 빠르고 견고하게 처리합니다.</li>
+                <li><strong>상용 UI 프레임워크(MUI v5) 기반 효율적 개발</strong> — 우대 사항으로 명시된 MUI v5를 활용해 디자인 공수를 절감하고 컴포넌트 일관성을 확보합니다. EZ-Approve, Harmony-Link 등에서 동일 스택으로 50+ 페이지를 안정적으로 운영해 본 패턴이 그대로 이식됩니다.</li>
+                <li><strong>다국어(KR/EN) UI 실전 경험</strong> — Harmony-Link, Fortune App에서 한국어·영어 이중언어 UI를 next-intl/Flutter intl로 구현한 경험이 있어, 본 프로젝트의 KR/EN 이중언어 요구사항에 그대로 대응합니다.</li>
+                <li><strong>AWS + CI/CD 턴키 인프라 운영 경험</strong> — Harmony-Link(AWS CDK), Series-B(AWS 5계층 보안+DLP+GeoIP), Life3(AWS KMS) 등에서 EC2/ECS·RDS·S3·CloudFront·ACM·Route53·GitHub Actions 기반 CI/CD를 직접 설계·운영해 본 경험을 그대로 적용합니다.</li>
+                <li><strong>1순위 산출물 완성도 우선 일정 설계</strong> — 공고에 명시된 "3~4개월" 범위 중 4개월(120일)을 권장 일정으로 제안합니다. 단계별 마일스톤 검수와 통합 테스트 기간을 충분히 확보하여 상용 배포 직후의 안정성을 보장합니다.</li>
+              </ol>
+
+              <h2>사용 기술 및 툴</h2>
+              <h3>개발 기술</h3>
+              <div class="flex flex-wrap gap-2 not-prose mb-4">
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">Next.js 14</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">React 18</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">TypeScript</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">MUI v5</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">Recharts</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">next-intl</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">NestJS 10</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">TypeORM</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">CASL</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">PostgreSQL</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">Redis</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">Socket.io</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">Docker</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">AWS EC2/ECS</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">AWS RDS</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">AWS S3 + CloudFront</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">AWS SES/SNS</span>
+                <span class="rounded-full border border-sky-200 bg-sky-50 px-3 py-1 text-sm font-medium text-sky-700">GitHub Actions</span>
+              </div>
+              <h3>협업 및 커뮤니케이션</h3>
+              <div class="flex flex-wrap gap-2 not-prose">
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">Slack / 카카오톡</span>
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">Zoom / Google Meet</span>
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">Notion / Google Docs</span>
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">Figma</span>
+                <span class="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-medium text-amber-700">GitHub Issues</span>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <!-- PAGE: Estimate -->
+        <div id="page-estimate" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>견적서</h1>
+              <blockquote>본 견적서는 공고에 명시된 과업 범위(기획·디자인·프론트엔드·미들웨어·AWS 인프라)를 기반으로 항목별로 산출되었습니다.</blockquote>
+
+              <h2>견적 요약</h2>
+              <table>
+                <tr><th>항목</th><th>내용</th></tr>
+                <tr><td>프로젝트명</td><td>AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발</td></tr>
+                <tr><td>제안 금액</td><td><strong>18,000,000원 (VAT 별도)</strong></td></tr>
+                <tr><td>제안 기간</td><td>120일 (4개월)</td></tr>
+                <tr><td>견적 유효기간</td><td>제안일로부터 30일</td></tr>
+              </table>
+
+              <h2>상세 견적 내역</h2>
+              <table>
+                <thead>
+                  <tr><th>구분</th><th>항목</th><th>수량</th><th>단가</th><th>금액</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>기획</td><td>요구사항 정의서, IA, 화면 기획서, DB 설계, 시스템 아키텍처</td><td>1식</td><td>-</td><td>2,000,000원</td></tr>
+                  <tr><td>디자인</td><td>Figma UI/UX 디자인(권한별 화면), 컴포넌트 라이브러리, 다국어 적용</td><td>1식</td><td>-</td><td>2,000,000원</td></tr>
+                  <tr><td>프론트엔드</td><td>고객 대시보드, 관리자 웹, 콘텐츠 관리, 탐지 피드, 리포트, 다국어(KR/EN)</td><td>1식</td><td>-</td><td>5,300,000원</td></tr>
+                  <tr><td>미들웨어</td><td>인증·RBAC·멀티테넌시·감사 로그·AI 엔진 중계·Notice &amp; Takedown·알림</td><td>1식</td><td>-</td><td>5,000,000원</td></tr>
+                  <tr><td>인프라</td><td>AWS 환경 구축(EC2/ECS·RDS·S3·CloudFront·ACM·Route53), CI/CD, Docker 통합</td><td>1식</td><td>-</td><td>2,000,000원</td></tr>
+                  <tr><td>QA &amp; 배포</td><td>통합/회귀 테스트, 운영·관리자 매뉴얼, 프로덕션 배포</td><td>1식</td><td>-</td><td>1,700,000원</td></tr>
+                </tbody>
+                <tfoot>
+                  <tr><th colspan="4">합계 (VAT 별도)</th><th>18,000,000원</th></tr>
+                </tfoot>
+              </table>
+
+              <h2>산정 근거</h2>
+              <ul>
+                <li>공고에 명시된 4대 과업(기획·디자인 / 프론트엔드 / 미들웨어 / 인фра)을 기준으로 항목별로 분리 산정하였습니다.</li>
+                <li>1순위 산출물 완성도 우선순위에 맞추어 QA·통합 테스트·매뉴얼 항목을 별도 비중으로 확보하였습니다.</li>
+                <li>유사 B2B SaaS 대시보드(EZ-Approve, Series-B, Harmony-Link) 수행 시 산출된 항목별 비중을 본 프로젝트 범위에 맞게 보정하였습니다.</li>
+                <li>VAT 별도, 견적 유효기간 30일, 단계별(M1/M2/M3/M4) 검수 후 분할 청구 기준입니다.</li>
+              </ul>
+
+              <h2>포함 사항</h2>
+              <ul>
+                <li>프론트엔드(고객 대시보드 + 관리자 웹) 및 미들웨어 원본 소스 코드 전체 이관</li>
+                <li>기능 정의서, 화면 기획서, 데이터베이스 설계서, 시스템 아키텍처 및 인프라 구성도</li>
+                <li>관리자 및 사용자 매뉴얼(국문 기본 / 영문은 핵심 화면 위주)</li>
+                <li>AWS 인프라 1차 구축 및 CI/CD 파이프라인 구성, SSL/TLS·도메인 연결</li>
+                <li>1개월 무상 하자 보수(라이브 환경 결함 대응)</li>
+              </ul>
+
+              <h2>불포함 사항</h2>
+              <ul>
+                <li>AWS 인프라 사용료(EC2/ECS·RDS·S3·CloudFront·SES/SNS 등 클라우드 비용)</li>
+                <li>도메인 구매 비용 및 외부 유료 API 사용 비용</li>
+                <li>저작권 보호 AI 엔진 자체의 개발·튜닝(클라이언트 자체 보유 영역)</li>
+                <li>하자 보수 기간 이후 유지보수 및 신규 기능 고도화</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        <!-- PAGE: Man-day -->
+        <div id="page-manday" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>공수계산서</h1>
+              <blockquote>기능별 개발 공수(Man-Day)를 산출하여 일정과 비용의 근거를 제시합니다.</blockquote>
+
+              <h2>공수 요약</h2>
+              <table>
+                <tr><th>구분</th><th>공수 (M/D)</th><th>비율</th></tr>
+                <tr><td>기획/설계</td><td>8 M/D</td><td>10%</td></tr>
+                <tr><td>디자인 (Figma)</td><td>12 M/D</td><td>15%</td></tr>
+                <tr><td>프론트엔드</td><td>22 M/D</td><td>27%</td></tr>
+                <tr><td>미들웨어 (백엔드)</td><td>20 M/D</td><td>25%</td></tr>
+                <tr><td>인프라 / CI/CD</td><td>8 M/D</td><td>10%</td></tr>
+                <tr><td>QA / 통합 / 배포</td><td>10 M/D</td><td>13%</td></tr>
+                <tr><th>합계</th><th>80 M/D</th><th>100%</th></tr>
+              </table>
+
+              <h2>기능별 상세 공수</h2>
+              <table>
+                <thead>
+                  <tr><th>기능</th><th>세부 작업</th><th>담당</th><th>공수 (M/D)</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td rowspan="3">기획 / 설계</td><td>요구사항 정의서, IA, 화면 기획서</td><td>기획</td><td>4</td></tr>
+                  <tr><td>DB 설계서 (ERD, 멀티테넌시 모델)</td><td>기획</td><td>2</td></tr>
+                  <tr><td>시스템 아키텍처 및 인프라 구성도</td><td>기획</td><td>2</td></tr>
+
+                  <tr><td rowspan="2">디자인</td><td>Figma UI/UX 디자인 (관리자/운영자/조회자 화면)</td><td>디자인</td><td>8</td></tr>
+                  <tr><td>컴포넌트 라이브러리, 다국어(KR/EN) 적용</td><td>디자인</td><td>4</td></tr>
+
+                  <tr><td rowspan="2">인증 및 권한</td><td>회원가입/로그인/비밀번호 재설정 UI</td><td>FE</td><td>2</td></tr>
+                  <tr><td>JWT + Refresh Token + CASL 기반 RBAC 미들웨어</td><td>BE</td><td>3</td></tr>
+
+                  <tr><td rowspan="2">멀티테넌시</td><td>tenant 식별 미들웨어, 데이터 격리(스키마/행 분리)</td><td>BE</td><td>3</td></tr>
+                  <tr><td>감사 로그(audit_log) 인프라, 조회 화면</td><td>BE + FE</td><td>2</td></tr>
+
+                  <tr><td rowspan="2">콘텐츠 관리</td><td>콘텐츠 업로드(S3 멀티파트), 라이브러리 화면</td><td>FE + BE</td><td>4</td></tr>
+                  <tr><td>보호 정책 설정 화면 및 정책 API</td><td>FE + BE</td><td>3</td></tr>
+
+                  <tr><td rowspan="3">탐지 및 대응</td><td>AI 엔진 API 호출 중계(미들웨어, 재시도/실패 큐)</td><td>BE</td><td>3</td></tr>
+                  <tr><td>실시간 침해 탐지 피드(WebSocket)</td><td>FE + BE</td><td>3</td></tr>
+                  <tr><td>증거 패키지 조회·다운로드, Notice &amp; Takedown 추적 워크플로우</td><td>FE + BE</td><td>4</td></tr>
+
+                  <tr><td rowspan="2">알림 및 리포트</td><td>이메일(SES)·SMS(SNS)·인앱 알림 통합</td><td>BE</td><td>2</td></tr>
+                  <tr><td>차트 기반 분석 화면, 월간 리포트(Recharts + PDF)</td><td>FE + BE</td><td>3</td></tr>
+
+                  <tr><td>다국어</td><td>한국어·영어 next-intl 적용 및 번역 키 관리</td><td>FE</td><td>2</td></tr>
+
+                  <tr><td rowspan="3">인프라 / CI/CD</td><td>AWS VPC/EC2 또는 ECS·RDS·S3·CloudFront 구축</td><td>인프라</td><td>4</td></tr>
+                  <tr><td>Docker 엔진(저작권 보호 AI) 통합·docker-compose</td><td>인프라</td><td>2</td></tr>
+                  <tr><td>GitHub Actions CI/CD, ACM SSL, Route53 도메인 연결</td><td>인프라</td><td>2</td></tr>
+
+                  <tr><td rowspan="3">QA / 통합 / 배포</td><td>통합 테스트(API + UI E2E)</td><td>QA</td><td>4</td></tr>
+                  <tr><td>관리자/사용자 매뉴얼, 운영 가이드</td><td>기획</td><td>3</td></tr>
+                  <tr><td>프로덕션 배포 및 안정화 대응</td><td>인프라</td><td>3</td></tr>
+                </tbody>
+              </table>
+
+              <h2>산정 기준</h2>
+              <ul>
+                <li>1 M/D = 8시간 기준 (1인 1일 작업량)</li>
+                <li>주 5일 근무 기준, 달력 일수 환산 시 7/5 보정 적용</li>
+                <li>버퍼 10~15% 포함</li>
+                <li>유사 B2B SaaS 대시보드 수행 경험(EZ-Approve, Series-B, Harmony-Link) 기반 효율적 개발</li>
+                <li>클라이언트 커뮤니케이션 오버헤드(주 3~5시간)는 별도 산입</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        <!-- PAGE: PRD -->
+        <div id="page-prd" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>PRD (Product Requirements Document)</h1>
+              <blockquote>공고에 명시된 과업 범위와 우대 사항을 반영하여 본 프로젝트의 기능 요구사항을 정리합니다.</blockquote>
+
+              <h2>1. 프로젝트 배경 및 목적</h2>
+              <ul>
+                <li><strong>배경</strong>: 클라이언트는 자체 개발 완료한 저작권 보호 AI 백엔드 엔진(API, Docker 이미지)을 보유하고 있으며, 이를 기업 고객이 활용할 수 있는 B2B 플랫폼으로 상용화하고자 합니다.</li>
+                <li><strong>목적</strong>: 고객사가 자사 콘텐츠의 저작권 침해 현황을 실시간으로 확인하고 Notice &amp; Takedown 등 대응 조치를 일관된 워크플로우로 관리할 수 있는 멀티테넌트 B2B SaaS 대시보드를 구축합니다.</li>
+                <li><strong>완성도 기준</strong>: MVP가 아닌 실제 상용화(판매·운영) 가능한 수준의 안정성·UX 완성도를 요구합니다.</li>
+                <li><strong>턴키 범위</strong>: 기획·디자인 → 프론트엔드 → 미들웨어 → AWS 인프라·CI/CD까지 단일 파트너사가 모두 책임지고 납품합니다.</li>
+              </ul>
+
+              <h2>2. 사용자 정의</h2>
+              <table>
+                <thead>
+                  <tr><th>사용자 유형</th><th>설명</th><th>주요 기능</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>플랫폼 관리자 (Platform Admin)</td><td>플랫폼 운영사(클라이언트) 내부 운영자</td><td>테넌트(기업) 생성·관리, 글로벌 정책, 전체 감사 로그, 시스템 모니터링</td></tr>
+                  <tr><td>기업 관리자 (Tenant Admin)</td><td>고객 기업 내 최상위 관리자</td><td>회사 정보, 사용자 초대·권한 부여, 보호 정책 설정, 결제·플랜</td></tr>
+                  <tr><td>운영자 (Operator)</td><td>실제 침해 대응을 담당하는 실무자</td><td>콘텐츠 업로드/관리, 탐지 피드 조회, 증거 패키지 다운로드, Notice &amp; Takedown 요청 제출·추적</td></tr>
+                  <tr><td>조회자 (Viewer)</td><td>보고·열람 권한만 가진 사용자</td><td>대시보드/리포트 조회, 알림 수신(읽기 전용)</td></tr>
+                </tbody>
+              </table>
+
+              <h2>3. 기능 요구사항</h2>
+
+              <h3>3.1 인증 및 권한 관리</h3>
+              <ul>
+                <li><strong>[필수]</strong> 이메일/비밀번호 회원가입, 로그인, 비밀번호 재설정(메일 토큰 기반)</li>
+                <li><strong>[필수]</strong> 역할 기반 접근 제어 — 관리자·운영자·조회자 3단계 권한 분리</li>
+                <li><strong>[필수]</strong> 멀티테넌시 구조 — 여러 기업이 하나의 플랫폼을 공유하되 데이터·UI 컨텍스트 격리</li>
+                <li><strong>[필수]</strong> 감사 로그 — 인증·콘텐츠·정책·Takedown 등 주요 액션 시점·주체·대상 기록 및 조회</li>
+                <li><strong>[선택]</strong> 2단계 인증(2FA), SSO(Google Workspace/Microsoft 365)</li>
+              </ul>
+
+              <h3>3.2 콘텐츠 관리</h3>
+              <ul>
+                <li><strong>[필수]</strong> 콘텐츠 업로드(대용량 파일 멀티파트, S3 Pre-signed URL)</li>
+                <li><strong>[필수]</strong> 콘텐츠 라이브러리(검색·필터·태그·페이지네이션)</li>
+                <li><strong>[필수]</strong> 보호 정책 설정 화면 — 콘텐츠별/카테고리별 보호 수준·우선순위·자동 대응 규칙</li>
+                <li><strong>[필수]</strong> 각종 설정 페이지 — 알림 채널, 리포트 수신자, 워크플로우 단계 등</li>
+              </ul>
+
+              <h3>3.3 탐지 및 대응</h3>
+              <ul>
+                <li><strong>[필수]</strong> 실시간 침해 탐지 피드 — AI 엔진이 푸시하는 침해 이벤트를 미들웨어가 수신·정규화하여 대시보드에 스트림(WebSocket)</li>
+                <li><strong>[필수]</strong> 증거 패키지 조회 및 다운로드 — URL·캡처·해시 등 메타데이터와 원본 증거 파일</li>
+                <li><strong>[필수]</strong> Notice &amp; Takedown 요청 추적 — 요청서 작성·제출, 제출 상태(Pending / Accepted / Rejected / Completed) 및 후속 조치(재요청, 법무 에스컬레이션) 워크플로우 기록</li>
+                <li><strong>[필수]</strong> AI 엔진 API 호출 중계 — 미들웨어가 인증·rate limit·재시도·실패 큐를 책임지고 호출을 안정화</li>
+              </ul>
+
+              <h3>3.4 알림 및 리포트</h3>
+              <ul>
+                <li><strong>[필수]</strong> 이메일(AWS SES), SMS(AWS SNS), 인앱 알림 — 채널별 ON/OFF 및 임계치 설정</li>
+                <li><strong>[필수]</strong> 차트 기반 분석 화면 — 침해 건수, 처리율, 채널별 분포 등 (Recharts)</li>
+                <li><strong>[필수]</strong> 월간 리포트 — PDF 자동 생성·이메일 발송, 다운로드 보관함</li>
+              </ul>
+
+              <h3>3.5 다국어</h3>
+              <ul>
+                <li><strong>[필수]</strong> 한국어·영어 이중언어 UI (next-intl 기반 키 관리)</li>
+                <li><strong>[필수]</strong> 사용자별 언어 설정 저장 및 로그인 시 자동 적용</li>
+                <li><strong>[필수]</strong> 이메일 템플릿 다국어 분기</li>
+              </ul>
+
+              <h3>3.6 인프라 및 배포</h3>
+              <ul>
+                <li><strong>[필수]</strong> AWS 기반 운영 환경(EC2 또는 ECS Fargate, RDS PostgreSQL, S3, CloudFront)</li>
+                <li><strong>[필수]</strong> 클라이언트 제공 Docker 엔진과의 통합 배포(docker-compose 또는 ECS Task Definition)</li>
+                <li><strong>[필수]</strong> GitHub Actions 기반 CI/CD 파이프라인, ACM SSL/TLS, Route53 도메인 설정</li>
+              </ul>
+
+              <h2>4. 비기능 요구사항</h2>
+              <table>
+                <thead>
+                  <tr><th>항목</th><th>요구사항</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>성능</td><td>대시보드 주요 화면 TTI 3초 이내, 미들웨어 API p95 500ms 이내 (단순 조회 기준)</td></tr>
+                  <tr><td>보안</td><td>HTTPS 강제, JWT + Refresh Token, RBAC(CASL), 감사 로그, SQL Injection/XSS 방어, S3 Pre-signed URL</td></tr>
+                  <tr><td>가용성</td><td>운영 시간대 가동률 99% 이상, 무중단 배포(블루/그린 또는 롤링)</td></tr>
+                  <tr><td>확장성</td><td>테넌트·사용자 수 증가에 따른 수평 확장 가능 구조(stateless 미들웨어 + RDS)</td></tr>
+                  <tr><td>관측성</td><td>CloudWatch 로그·메트릭, 에러 모니터링(Sentry), 헬스 체크 엔드포인트</td></tr>
+                  <tr><td>접근성</td><td>주요 화면 키보드 네비게이션 및 WCAG 2.1 AA 수준 색 대비 준수</td></tr>
+                  <tr><td>다국어</td><td>모든 사용자향 텍스트 KR/EN 분리, 영문은 핵심 운영 흐름 우선 적용</td></tr>
+                </tbody>
+              </table>
+
+              <h2>5. 기술 제약사항</h2>
+              <ul>
+                <li>저작권 보호 AI 백엔드 엔진은 클라이언트가 Docker 이미지·OpenAPI 스펙·통합 테스트용 샘플 데이터 형태로 제공합니다. 본 프로젝트는 해당 엔진 자체를 수정하지 않고 미들웨어를 통해 안전하게 중계합니다.</li>
+                <li>AI/ML 모델 및 저작권 보호 알고리즘은 클라이언트 측에서 처리하며, 본 프로젝트의 책임 범위가 아닙니다.</li>
+                <li>인프라는 AWS를 기본으로 합니다(EC2/ECS·RDS·S3 등 명시). 타 클라우드 이전은 범위 외입니다.</li>
+                <li>한국어 기본·영어 보조의 이중언어 UI를 기본 정책으로 합니다.</li>
+              </ul>
+
+              <h2>6. 범위 외 사항 (Out of Scope)</h2>
+              <ul>
+                <li>저작권 보호 AI 엔진 자체의 개발·튜닝·정확도 개선</li>
+                <li>외부 결제(PG) 연동 및 결제 모듈 구축</li>
+                <li>법무 자문, 실제 Takedown 대행 업무</li>
+                <li>모바일 네이티브 앱(iOS/Android) 별도 개발 — 반응형 웹 기준</li>
+                <li>3개 이상의 다국어 추가(예: 일본어, 중국어 등)</li>
+                <li>하자 보수 기간 이후 유지보수 및 신규 기능 고도화</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+
+        <!-- PAGE: Timeline -->
+        <div id="page-timeline" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>일정 제안</h1>
+              <blockquote>총 120일 기준 단계별 마일스톤 및 산출물을 제안합니다. 공고에 명시된 "3~4개월" 범위 중 산출물 완성도(1순위) 확보를 위해 4개월을 권장합니다.</blockquote>
+
+              <h2>전체 일정 요약</h2>
+              <table>
+                <thead>
+                  <tr><th>단계</th><th>기간</th><th>주요 산출물</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>Phase 1: 기획 / 디자인 / 인프라 1차</td><td>Day 1–30</td><td>요구사항 정의서, ERD, 시스템 아키텍처, Figma 디자인, AWS 1차 셋업, AI 엔진 통합 테스트</td></tr>
+                  <tr><td>Phase 2: 미들웨어 + 콘텐츠 관리 1차</td><td>Day 31–60</td><td>인증/RBAC/멀티테넌시, 콘텐츠 업로드·라이브러리·정책, AI 엔진 중계 1차</td></tr>
+                  <tr><td>Phase 3: 탐지·대응·알림·리포트</td><td>Day 61–90</td><td>실시간 탐지 피드, 증거 패키지, Notice &amp; Takedown 추적, 알림·차트 리포트</td></tr>
+                  <tr><td>Phase 4: 다국어·QA·운영 매뉴얼·배포</td><td>Day 91–120</td><td>KR/EN 다국어 마무리, 통합/회귀 테스트, 관리자/사용자 매뉴얼, 프로덕션 배포·안정화</td></tr>
+                </tbody>
+              </table>
+            </article>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <h2 class="mb-4 text-sm font-semibold tracking-[0.14em] text-slate-500">상세 타임라인</h2>
+            <div class="timeline">
+              <div class="timeline-item">
+                <p class="text-sm font-semibold tracking-[0.14em] text-sky-700">PHASE 1</p>
+                <h4 class="text-base font-semibold text-slate-900">기획 · 디자인 · 인프라 1차</h4>
+                <p class="mb-1 text-sm font-semibold text-amber-600">Day 1–30 (약 4주)</p>
+                <p class="text-sm leading-7 text-slate-600">요구사항 확정, IA, 화면 기획서, DB 설계서, 시스템 아키텍처 설계, Figma UI/UX 디자인(권한별 화면 + 다국어), AWS 인프라 1차 셋업, 클라이언트 제공 AI 엔진 Docker 이미지 통합 테스트, OpenAPI 스펙 기반 미들웨어 IF 설계.</p>
+                <ul class="mt-2 list-disc pl-5 text-sm text-slate-500">
+                  <li>산출물: 요구사항 정의서, 화면 기획서, ERD, 시스템 아키텍처도, Figma 디자인 시안 1차, AWS 인프라 구성도</li>
+                </ul>
+              </div>
+              <div class="timeline-item">
+                <p class="text-sm font-semibold tracking-[0.14em] text-sky-700">PHASE 2</p>
+                <h4 class="text-base font-semibold text-slate-900">미들웨어 + 콘텐츠 관리 1차</h4>
+                <p class="mb-1 text-sm font-semibold text-amber-600">Day 31–60 (약 4주)</p>
+                <p class="text-sm leading-7 text-slate-600">JWT + CASL 기반 인증·RBAC, 멀티테넌시 데이터 격리, 감사 로그 인프라, 콘텐츠 업로드(S3 멀티파트)·라이브러리·보호 정책 설정 화면, AI 엔진 API 호출 중계 1차(재시도/실패 큐 포함), 관리자/운영자/조회자 권한 분리 UI.</p>
+                <ul class="mt-2 list-disc pl-5 text-sm text-slate-500">
+                  <li>산출물: 인증·권한 미들웨어, 멀티테넌시 모델, 콘텐츠 관리 화면, AI 엔진 중계 API, 1차 검수용 데모 환경</li>
+                </ul>
+              </div>
+              <div class="timeline-item">
+                <p class="text-sm font-semibold tracking-[0.14em] text-sky-700">PHASE 3</p>
+                <h4 class="text-base font-semibold text-slate-900">탐지 · 대응 · 알림 · 리포트</h4>
+                <p class="mb-1 text-sm font-semibold text-amber-600">Day 61–90 (약 4주)</p>
+                <p class="text-sm leading-7 text-slate-600">실시간 침해 탐지 피드(WebSocket), 증거 패키지 조회·다운로드, Notice &amp; Takedown 요청 추적 워크플로우(제출 상태 + 후속 조치), 이메일(SES)·SMS(SNS)·인앱 알림 통합, 차트 분석 화면(Recharts), 월간 리포트 PDF 자동 생성.</p>
+                <ul class="mt-2 list-disc pl-5 text-sm text-slate-500">
+                  <li>산출물: 탐지 피드 화면 + WebSocket, 증거 패키지 다운로드, Takedown 워크플로우, 알림 통합, 분석/리포트 화면</li>
+                </ul>
+              </div>
+              <div class="timeline-item">
+                <p class="text-sm font-semibold tracking-[0.14em] text-sky-700">PHASE 4</p>
+                <h4 class="text-base font-semibold text-slate-900">다국어 · QA · 운영 매뉴얼 · 프로덕션 배포</h4>
+                <p class="mb-1 text-sm font-semibold text-amber-600">Day 91–120 (약 4주)</p>
+                <p class="text-sm leading-7 text-slate-600">KR/EN 다국어 적용 마무리, 통합/회귀 테스트, 보안 점검(SQLi/XSS/권한 우회 시나리오), 관리자/사용자 매뉴얼, 운영 가이드, 프로덕션 배포, 안정화 대응 및 1차 무상 하자 보수 진입.</p>
+                <ul class="mt-2 list-disc pl-5 text-sm text-slate-500">
+                  <li>산출물: 다국어 적용 완료, 통합 테스트 리포트, 관리자/사용자 매뉴얼, 프로덕션 환경, 운영 인수인계 문서</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h2>마일스톤 체크포인트</h2>
+              <table>
+                <thead>
+                  <tr><th>마일스톤</th><th>시점</th><th>검수 기준</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>M1: 설계·디자인 승인 + 인프라 1차</td><td>Day 30</td><td>요구사항 정의서·화면 기획서·ERD·아키텍처도 승인, Figma 디자인 시안 확정, AWS 1차 환경 가동, AI 엔진 Docker 통합 테스트 통과</td></tr>
+                  <tr><td>M2: 미들웨어 + 콘텐츠 관리 데모</td><td>Day 60</td><td>인증·RBAC·멀티테넌시·감사 로그, 콘텐츠 업로드·라이브러리·정책 화면, AI 엔진 중계 1차 데모 환경 시연 및 승인</td></tr>
+                  <tr><td>M3: 탐지·대응·리포트 통합 데모</td><td>Day 90</td><td>실시간 탐지 피드·Takedown 추적·알림·차트 분석·월간 리포트 전체 흐름 시연 및 승인</td></tr>
+                  <tr><td>M4: 프로덕션 배포 & 인수인계</td><td>Day 120</td><td>다국어 적용, 통합 테스트 리포트, 매뉴얼·운영 가이드, 프로덕션 배포 완료, 하자 보수 진입</td></tr>
+                </tbody>
+              </table>
+
+              <h2>커뮤니케이션 계획</h2>
+              <table>
+                <tr><th>항목</th><th>방식</th><th>주기</th></tr>
+                <tr><td>일일 진행 공유</td><td>Slack / 카카오톡</td><td>매일</td></tr>
+                <tr><td>주간 미팅</td><td>Zoom / Google Meet</td><td>주 1회</td></tr>
+                <tr><td>마일스톤 리뷰</td><td>화면 공유 + 문서 + 데모 환경</td><td>단계 완료 시 (M1~M4)</td></tr>
+                <tr><td>이슈 트래킹</td><td>GitHub Issues</td><td>상시</td></tr>
+                <tr><td>긴급 이슈 대응</td><td>전화 / 카카오톡</td><td>업무 시간 내 1시간 이내 회신</td></tr>
+              </table>
+            </article>
+          </div>
+        </div>
+
+        <!-- PAGE: Portfolio -->
+        <div id="page-portfolio" class="page-section space-y-6">
+          <div class="rounded-2xl border border-slate-200/70 bg-white/95 p-5 shadow-soft backdrop-blur md:p-8">
+            <article class="doc-content">
+              <h1>유사 프로젝트 경험</h1>
+              <blockquote>본 프로젝트와 유사한 기능(B2B SaaS 대시보드, 멀티테넌시, RBAC, AI 엔진 연동, AWS 인프라)을 직접 1인 풀스택으로 수행한 경험을 소개합니다.</blockquote>
+            </article>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">13+</p>
+              <p class="mt-1 text-sm text-slate-500">수행 프로젝트</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">B2B SaaS</p>
+              <p class="mt-1 text-sm text-slate-500">핵심 도메인</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">멀티테넌트</p>
+              <p class="mt-1 text-sm text-slate-500">아키텍처 운영 경험</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-4 text-center shadow-soft backdrop-blur">
+              <p class="text-2xl font-bold text-sky-700">AWS 턴키</p>
+              <p class="mt-1 text-sm text-slate-500">인프라·CI/CD 직접 운영</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft backdrop-blur md:p-8">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">B2B SaaS · 전자결재</div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">EZ-Approve — 기업용 전자결재 SaaS</h3>
+              <p class="mt-1 text-sm text-slate-400">B2B SaaS / 기업용 어드민 · 2026.01–2026.03 (약 9주)</p>
+              <div class="mt-3 doc-content">
+                <h4>프로젝트 개요</h4>
+                <p>다단계 전자결재·전자도장·실시간 공동 편집·외부 셀프서비스 포탈을 갖춘 기업용 SaaS. 50+ 페이지, 120~150 API 엔드포인트, 34 엔티티, 7 사용자 역할, 6계층 보안 구조를 1인 풀스택으로 설계·구현·운영.</p>
+                <h4>핵심 기능</h4>
+                <ul>
+                  <li>다단계 전자결재 엔진(8종 결재 액션), 결재 워크플로우 추적</li>
+                  <li>7 사용자 역할 + 6계층 보안(CASL 기반 RBAC)</li>
+                  <li>VICS 규제 보고, 전자도장·전자서명</li>
+                  <li>Lexical 리치 에디터(170파일, 26 커스텀 노드), 실시간 공동 편집(Yjs/CRDT)</li>
+                  <li>토큰 기반 외부 셀프서비스 포탈</li>
+                </ul>
+                <h4>본 프로젝트와의 유사점</h4>
+                <ul>
+                  <li><strong>3단계 권한 분리 + 감사 로그</strong>: 본 프로젝트의 관리자·운영자·조회자 권한 분리 및 감사 로그 요구사항을 CASL/RBAC 패턴으로 직접 구현한 경험이 그대로 적용됩니다.</li>
+                  <li><strong>대규모 B2B 어드민 UX</strong>: 50+ 페이지 규모의 권한별 화면 기획·MUI v5 컴포넌트 운영 경험으로 본 프로젝트의 대시보드 완성도를 빠르게 끌어올릴 수 있습니다.</li>
+                  <li><strong>워크플로우 추적</strong>: 결재 상태·후속 조치 추적 패턴이 본 프로젝트 Notice &amp; Takedown 요청 추적과 동일한 구조입니다.</li>
+                </ul>
+                <h4>기술 스택</h4>
+                <div class="flex flex-wrap gap-1.5 not-prose">
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">NestJS 10</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Next.js 13</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">TypeScript</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">MySQL 8</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Lexical + Yjs</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">CASL</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">MUI v5</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Docker</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft backdrop-blur md:p-8">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">B2B SaaS · 멀티테넌트 · AI 연동</div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">Harmony Link — 시니어 주간보호 멀티테넌트 SaaS</h3>
+              <p class="mt-1 text-sm text-slate-400">B2B SaaS / 헬스케어 · 2025 (약 6개월)</p>
+              <div class="mt-3 doc-content">
+                <h4>프로젝트 개요</h4>
+                <p>주간보호센터 다수가 하나의 플랫폼을 공유하는 멀티테넌트 B2B SaaS. 케어 로그·투약·보호자 커뮤니케이션·AI 건강 분석을 통합한 풀스택 시스템(133K+ LOC, 140+ 엔드포인트)을 1인이 설계·구현·운영.</p>
+                <h4>핵심 기능</h4>
+                <ul>
+                  <li>멀티테넌트 아키텍처 — 센터 단위 데이터 격리 + 권한 분리</li>
+                  <li>OpenAI 기반 AI 건강 분석 파이프라인 연동</li>
+                  <li>전자서명, 알림 채널(이메일·푸시·인앱)</li>
+                  <li>AWS CDK 기반 인프라 코드화, 6 플랫폼 동시 지원</li>
+                  <li>한국어·영어 다국어 UI</li>
+                </ul>
+                <h4>본 프로젝트와의 유사점</h4>
+                <ul>
+                  <li><strong>멀티테넌시 구조</strong>: 본 프로젝트의 "여러 기업이 하나의 플랫폼을 쓰는" 요구사항과 정확히 동일한 패턴(tenant 식별 미들웨어 + 데이터 격리)을 운영해 본 경험이 있습니다.</li>
+                  <li><strong>외부 AI 엔진 연동</strong>: 본 프로젝트의 저작권 보호 AI 엔진(Docker) 호출 중계 요구사항과 같은 형태로, 외부 AI 엔진 호출·재시도·실패 큐 패턴을 안정적으로 구현해 본 경험이 있습니다.</li>
+                  <li><strong>AWS 인프라 직접 운영</strong>: AWS CDK·CI/CD를 1인이 끝까지 끌고 가본 경험을 본 프로젝트 AWS EC2/ECS·RDS·S3·CI/CD 셋업에 그대로 적용할 수 있습니다.</li>
+                  <li><strong>다국어 UI</strong>: KR/EN 이중언어 UI 운영 경험.</li>
+                </ul>
+                <h4>기술 스택</h4>
+                <div class="flex flex-wrap gap-1.5 not-prose">
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">NestJS</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Next.js</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">React</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">TypeScript</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">MySQL</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">AWS CDK</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Docker</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">OpenAI</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-2xl border border-slate-200/70 bg-white/90 p-5 shadow-soft backdrop-blur md:p-8">
+              <div class="mb-3 inline-flex rounded-full border px-2.5 py-1 text-sm font-semibold tracking-[0.12em] bg-sky-100 text-sky-700 border-sky-200">B2B 핀테크 · 대규모 어드민 포탈</div>
+              <h3 class="text-lg font-semibold tracking-tight text-slate-900">Series-B — VC 펀드 관리 플랫폼</h3>
+              <p class="mt-1 text-sm text-slate-400">핀테크 · VC 펀드 관리 · 2023.11–2024.12 (14개월)</p>
+              <div class="mt-3 doc-content">
+                <h4>프로젝트 개요</h4>
+                <p>GP/LP/스타트업을 위한 VC 펀드 라이프사이클 관리 플랫폼. PR 1,652건, 50+ 페이지, 22 도메인 모듈, 80+ 엔티티, 200~300+ API 엔드포인트를 1인 풀스택으로 끝까지 운영. 5계층 보안 + DLP + GeoIP로 상용 안정성 확보.</p>
+                <h4>핵심 기능</h4>
+                <ul>
+                  <li>VC 펀드 라이프사이클 관리(GP/LP/스타트업 권한 분리)</li>
+                  <li>AI 투자 보고서 자동 생성(ChatGPT 연동)</li>
+                  <li>VICS 규제 5종 양식, NICE KYC</li>
+                  <li>CRDT 실시간 공동편집, 결재 워크플로우</li>
+                  <li>5계층 보안 + DLP + GeoIP, AWS 인프라</li>
+                </ul>
+                <h4>본 프로젝트와의 유사점</h4>
+                <ul>
+                  <li><strong>대규모 B2B SaaS 운영 안정성</strong>: PR 1,652건 규모를 1인 풀스택으로 끝까지 가본 경험이 있어, 본 프로젝트의 "MVP가 아닌 상용 안정성" 요구를 그대로 충족할 수 있습니다.</li>
+                  <li><strong>외부 AI 호출 + 보고서 자동 생성</strong>: ChatGPT 기반 AI 보고서 자동 생성 패턴이 본 프로젝트의 AI 엔진 중계 + 월간 리포트 자동 생성과 같은 구조입니다.</li>
+                  <li><strong>다중 권한 + 감사 로그 + 규제 대응</strong>: 본 프로젝트의 권한 분리·감사 로그·운영 안정성 요구사항을 동일 패턴으로 운영해 본 경험이 있습니다.</li>
+                  <li><strong>AWS 5계층 보안</strong>: 상용 환경에서 AWS 보안 계층(WAF·VPC·IAM·KMS·CloudTrail) 직접 설계 경험.</li>
+                </ul>
+                <h4>기술 스택</h4>
+                <div class="flex flex-wrap gap-1.5 not-prose">
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Next.js 13</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">NestJS 10</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">TypeScript</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">MySQL</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">Lexical + Yjs</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">AWS</span>
+                  <span class="rounded-full border border-slate-200 bg-slate-50 px-2 py-0.5 text-sm text-slate-500">ChatGPT API</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-sky-200/70 bg-gradient-to-br from-sky-50 to-brand-50 p-6 text-center shadow-soft md:p-10">
+            <h2 class="text-xl font-bold tracking-tight text-slate-900 md:text-2xl">함께 만들어 가겠습니다</h2>
+            <p class="mx-auto mt-3 max-w-lg text-sm leading-7 text-slate-600">프로젝트에 대해 더 자세한 논의를 원하시면 미팅을 신청해 주세요.</p>
+          </div>
+        </div>
+
+        <div id="page-nav" class="mt-6 flex items-center justify-between gap-4" style="display:none;">
+          <a id="nav-prev" href="#home"
+             class="group flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-5 py-3 shadow-soft backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white">
+            <svg class="w-5 h-5 text-slate-400 transition group-hover:text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+            <span>
+              <span class="block text-xs text-slate-400">이전</span>
+              <span id="nav-prev-label" class="block text-sm font-semibold text-slate-700 group-hover:text-sky-700">홈</span>
+            </span>
+          </a>
+          <a id="nav-next" href="#overview"
+             class="group flex items-center gap-2 rounded-2xl border border-slate-200/70 bg-white/90 px-5 py-3 shadow-soft backdrop-blur transition hover:-translate-y-0.5 hover:border-sky-200 hover:bg-white text-right ml-auto">
+            <span>
+              <span class="block text-xs text-slate-400">다음</span>
+              <span id="nav-next-label" class="block text-sm font-semibold text-slate-700 group-hover:text-sky-700">프로젝트 소개</span>
+            </span>
+            <svg class="w-5 h-5 text-slate-400 transition group-hover:text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </a>
+        </div>
+
+      </main>
+    </div>
+
+    <footer class="mt-10 border-t border-slate-200 pt-6 text-xs text-slate-500">
+      &copy; 2026 &middot; 본 제안서는 AI 기반 저작권 보호 B2B SaaS 대시보드 및 미들웨어 통합 개발 프로젝트를 위해 작성되었습니다.
+    </footer>
+  </div>
+
+  <script>
+    const pages = ['home', 'overview', 'estimate', 'manday', 'prd', 'timeline', 'portfolio'];
+    const pageLabels = {
+      home: '홈', overview: '프로젝트 소개', estimate: '견적서',
+      manday: '공수계산서', prd: 'PRD', timeline: '일정 제안', portfolio: '유사 프로젝트 경험'
+    };
+
+    function navigate(pageId) {
+      if (!pages.includes(pageId)) pageId = 'home';
+      document.querySelectorAll('.page-section').forEach(el => el.classList.remove('active'));
+      const target = document.getElementById('page-' + pageId);
+      if (target) target.classList.add('active');
+      document.querySelectorAll('.nav-link').forEach(link => {
+        if (link.dataset.page === pageId) {
+          link.className = 'nav-link block rounded-xl border px-3 py-2 text-sm border-sky-200 bg-sky-50 font-medium text-sky-700';
+        } else {
+          link.className = 'nav-link block rounded-xl border border-transparent px-3 py-2 text-sm text-slate-600 hover:border-slate-200 hover:bg-slate-50 hover:text-slate-900';
+        }
+      });
+      updatePageNav(pageId);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      closeSidebar();
+    }
+
+    function updatePageNav(pageId) {
+      const nav = document.getElementById('page-nav');
+      const idx = pages.indexOf(pageId);
+      const prevBtn = document.getElementById('nav-prev');
+      const nextBtn = document.getElementById('nav-next');
+      const prevLabel = document.getElementById('nav-prev-label');
+      const nextLabel = document.getElementById('nav-next-label');
+
+      nav.style.display = (pageId === 'home') ? 'none' : 'flex';
+
+      if (idx > 0) {
+        prevBtn.href = '#' + pages[idx - 1];
+        prevLabel.textContent = pageLabels[pages[idx - 1]];
+        prevBtn.style.visibility = 'visible';
+      } else {
+        prevBtn.style.visibility = 'hidden';
+      }
+
+      if (idx < pages.length - 1) {
+        nextBtn.href = '#' + pages[idx + 1];
+        nextLabel.textContent = pageLabels[pages[idx + 1]];
+        nextBtn.style.visibility = 'visible';
+      } else {
+        nextBtn.style.visibility = 'hidden';
+      }
+    }
+
+    function closeSidebar() {
+      document.getElementById('sidebar').classList.remove('open');
+      document.getElementById('sidebar-backdrop').classList.remove('open');
+    }
+
+    function handleHash() {
+      const hash = (location.hash || '#home').replace('#', '');
+      navigate(hash);
+    }
+    window.addEventListener('hashchange', handleHash);
+    window.addEventListener('DOMContentLoaded', handleHash);
+
+    document.getElementById('sidebar-toggle').addEventListener('click', function() {
+      document.getElementById('sidebar').classList.toggle('open');
+      document.getElementById('sidebar-backdrop').classList.toggle('open');
+    });
+  </script>
+</body>
+</html>
